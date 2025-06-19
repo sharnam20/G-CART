@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from 'path'
 
 // add Product : /api/product/add
+// add Product : /api/product/add
 export const addProduct = async (req, res) => {
   try {
     console.log("=== ADD PRODUCT DEBUG ===");
@@ -15,12 +16,10 @@ export const addProduct = async (req, res) => {
 
     // Validation
     if (!name || !description || !category || !price || !offerPrice) {
-      console.log("Missing required fields");
       return res.status(400).json({ success: false, message: "All fields are required." });
     }
 
     if (!images || images.length === 0) {
-      console.log("No images provided");
       return res.status(400).json({ success: false, message: "At least one image is required." });
     }
 
@@ -32,89 +31,40 @@ export const addProduct = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid price values." });
     }
 
-    console.log("Starting image upload to Cloudinary...");
-
-    // Upload images to Cloudinary
+    // Upload images directly from memory to Cloudinary
     const imagesUrl = await Promise.all(
       images.map(async (file, index) => {
-        try {
-          console.log(`Uploading image ${index + 1}: ${file.path}`);
-          
-          // Check if file exists
-          if (!fs.existsSync(file.path)) {
-            throw new Error(`File not found: ${file.path}`);
-          }
-
-          const result = await cloudinary.uploader.upload(file.path, {
-            resource_type: 'image',
-            folder: 'products', // Optional: organize uploads in folders
-            public_id: `product_${Date.now()}_${index}`, // Optional: custom public_id
-          });
-
-          console.log(`Image ${index + 1} uploaded successfully:`, result.secure_url);
-
-          // Clean up temporary file
-          try {
-            fs.unlinkSync(file.path);
-            console.log(`Temporary file deleted: ${file.path}`);
-          } catch (deleteError) {
-            console.warn(`Could not delete temporary file: ${file.path}`, deleteError.message);
-          }
-
-          return result.secure_url;
-        } catch (uploadError) {
-          console.error(`Error uploading image ${index + 1}:`, uploadError.message);
-          throw uploadError;
-        }
+        const base64Image = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+        const result = await cloudinary.uploader.upload(base64Image, {
+          folder: "products",
+          public_id: `product_${Date.now()}_${index}`,
+        });
+        return result.secure_url;
       })
     );
 
-    console.log("All images uploaded successfully:", imagesUrl);
-
-    // ✅ FIX: Use consistent field naming
+    // Create product
     const newProduct = await product.create({
       name: name.trim(),
       description: description.trim(),
       category: category.trim(),
       price: priceNum,
-      offerPrice: offerPriceNum, // ✅ Changed from 'offerprice' to 'offerPrice'
+      offerPrice: offerPriceNum,
       image: imagesUrl,
       inStock: true
     });
 
-    console.log("Product created successfully:", newProduct._id);
-    console.log("=========================");
-
-    return res.status(201).json({ 
-      success: true, 
+    return res.status(201).json({
+      success: true,
       message: "Product added successfully.",
       productId: newProduct._id
     });
 
   } catch (error) {
-    console.error("=== ADD PRODUCT ERROR ===");
-    console.error("Error details:", error);
-    console.error("Error message:", error.message);
-    console.error("Error stack:", error.stack);
-    console.error("========================");
-
-    // Clean up any uploaded files on error
-    if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
-        try {
-          if (fs.existsSync(file.path)) {
-            fs.unlinkSync(file.path);
-            console.log(`Cleaned up file: ${file.path}`);
-          }
-        } catch (cleanupError) {
-          console.warn(`Could not clean up file: ${file.path}`, cleanupError.message);
-        }
-      });
-    }
-
-    return res.status(500).json({ 
-      success: false, 
-      message: "Internal server error. Please try again.",
+    console.error("ADD PRODUCT ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }

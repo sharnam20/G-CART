@@ -16,6 +16,7 @@ const onSubmitHandler = async (event) => {
       setIsSeller(true);
       localStorage.setItem("isSeller", "true");
       localStorage.setItem("token", data.token); // ✅ Save token
+      axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`; // ✅ Set header immediately
       navigate('/seller');
     } else {
       toast.error(data.message);
@@ -24,6 +25,7 @@ const onSubmitHandler = async (event) => {
     toast.error(error.message);
   }
 };
+
 
 
   useEffect(() => {

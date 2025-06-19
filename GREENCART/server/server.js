@@ -15,9 +15,16 @@ import { stripeWebhooks } from './controllers/orderController.js';
 const app = express();
 const port = process.env.PORT || 4000;
 
-// ✅ Connect to DB & Cloudinary
-await connectDB();
-await connectCloudinary();
+// ✅ Wrap async calls in IIFE for top-level await compatibility
+(async () => {
+  try {
+    await connectDB();
+    await connectCloudinary();
+    console.log("DB and Cloudinary connected successfully");
+  } catch (err) {
+    console.error("Error during DB/Cloudinary setup", err);
+  }
+})();
 
 // ✅ CORS Setup
 const corsOptions = {
@@ -27,7 +34,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// ✅ Stripe Webhook (before body-parser)
+// ✅ Stripe Webhook route before json parser
 app.post('/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);
 
 // ✅ Middlewares
@@ -43,10 +50,10 @@ app.use('/api/cart', cartRouter);
 app.use('/api/address', addressRouter);
 app.use('/api/order', orderRouter);
 
-// ✅ Only run server locally
+// ✅ Use app.listen only when running locally (not on Vercel)
 if (process.env.VERCEL !== '1') {
   app.listen(port, () => {
-    console.log(`Server running locally on http://localhost:${port}`);
+    console.log(`Server running at http://localhost:${port}`);
   });
 }
 

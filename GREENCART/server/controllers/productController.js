@@ -7,43 +7,36 @@ import path from 'path'
 // add Product : /api/product/add
 export const addProduct = async (req, res) => {
   try {
-    console.log("=== ADD PRODUCT DEBUG ===");
-    console.log("Request body:", req.body);
-    console.log("Request files:", req.files);
-
+    console.log("=== ADD PRODUCT START ===");
     const { name, description, category, price, offerPrice } = req.body;
-    const images = req.files;
 
-    // Validation
     if (!name || !description || !category || !price || !offerPrice) {
       return res.status(400).json({ success: false, message: "All fields are required." });
     }
 
-    if (!images || images.length === 0) {
+    const priceNum = parseFloat(price);
+    const offerPriceNum = parseFloat(offerPrice);
+
+    if (isNaN(priceNum) || isNaN(offerPriceNum)) {
+      return res.status(400).json({ success: false, message: "Price must be valid numbers." });
+    }
+
+    if (!req.files || req.files.length === 0) {
       return res.status(400).json({ success: false, message: "At least one image is required." });
     }
 
-    // Validate price values
-    const priceNum = parseFloat(price);
-    const offerPriceNum = parseFloat(offerPrice);
-    
-    if (isNaN(priceNum) || isNaN(offerPriceNum) || priceNum <= 0 || offerPriceNum <= 0) {
-      return res.status(400).json({ success: false, message: "Invalid price values." });
-    }
-
-    // Upload images directly from memory to Cloudinary
     const imagesUrl = await Promise.all(
-      images.map(async (file, index) => {
-        const base64Image = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
-        const result = await cloudinary.uploader.upload(base64Image, {
-          folder: "products",
-          public_id: `product_${Date.now()}_${index}`,
+      req.files.map(async (file, i) => {
+        const b64 = Buffer.from(file.buffer).toString("base64");
+        const dataURI = `data:${file.mimetype};base64,${b64}`;
+        const result = await cloudinary.uploader.upload(dataURI, {
+          folder: 'products',
+          public_id: `product_${Date.now()}_${i}`
         });
         return result.secure_url;
       })
     );
 
-    // Create product
     const newProduct = await product.create({
       name: name.trim(),
       description: description.trim(),
@@ -62,13 +55,10 @@ export const addProduct = async (req, res) => {
 
   } catch (error) {
     console.error("ADD PRODUCT ERROR:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    return res.status(500).json({ success: false, message: "Server error: " + error.message });
   }
 };
+
 
 // Get product : /api/product/list
 export const productList = async(req,res)=>{

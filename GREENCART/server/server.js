@@ -19,25 +19,18 @@ const port = process.env.PORT || 4000;
 await connectDB();
 await connectCloudinary();
 
-
-// ✅ Updated CORS Setup
-
+// ✅ CORS Setup
 const corsOptions = {
   origin: ['http://localhost:5173', 'http://localhost:5174'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 };
-
 app.use(cors(corsOptions));
 
+// ✅ Stripe Webhook (before body-parser)
+app.post('/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);
 
-
-
-app.use(cors(corsOptions));
-
-app.post('/stripe',express.raw({type:`application/json`}),stripeWebhooks)
-
-// ✅ Middleware
+// ✅ Middlewares
 app.use(express.json());
 app.use(cookieParser());
 
@@ -50,11 +43,12 @@ app.use('/api/cart', cartRouter);
 app.use('/api/address', addressRouter);
 app.use('/api/order', orderRouter);
 
-// ✅ Start Server
-const startServer = async () => {
+// ✅ Only run server locally
+if (process.env.VERCEL !== '1') {
   app.listen(port, () => {
-    console.log(`server is running on http://localhost:${port}`);
+    console.log(`Server running locally on http://localhost:${port}`);
   });
-};
+}
 
-startServer();
+// ✅ Export for Vercel
+export default app;

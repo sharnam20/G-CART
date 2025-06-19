@@ -1,0 +1,17 @@
+* {
+  font-family: "Outfit", sans-serif;
+  font-weight: 500; /* use medium weight as default */
+}
+@import "tailwindcss";
+
+* {
+  font-family: "Outfit", sans-serif;
+}
+
+:root {
+  --color-primary: #4fbf8b;
+  --color-primary-dull: #44ae7c;
+}
+.no-scrollbar ::-webkit-scrollbar{
+  display: none;
+}

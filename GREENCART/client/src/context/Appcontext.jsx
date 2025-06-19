@@ -21,20 +21,27 @@ export const Appcontextprovider = ({ children }) => {
        const [serchQuery,setSerchQuery] = useState({})
 
        // fetch seller status
+// ✅ UPDATED: fetchSeller with token
+const fetchSeller = async () => {
+  try {
+    const token = localStorage.getItem("token"); // 🔑 Get token
 
-       const fetchSeller = async ()=>{
-        try{
-          const {data} =await axios.get('/api/seller/is-auth')
-          if(data.success){
-            setIsSeller(true)
-          }else{
-            setIsSeller(false)
-          }
-        }catch(error){
-        setIsSeller(false)
+    const { data } = await axios.get('/api/seller/is-auth', {
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ Send token
+      },
+    });
 
-        }
-       }
+    if (data.success) {
+      setIsSeller(true);
+    } else {
+      setIsSeller(false);
+    }
+  } catch (error) {
+    console.error('fetchSeller error:', error);
+    setIsSeller(false);
+  }
+};
 
        // fetch user auth status , user data and cart items
 

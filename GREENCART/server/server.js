@@ -28,7 +28,7 @@ const port = process.env.PORT || 4000;
 
 // ✅ CORS Setup
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: ['http://localhost:5173', 'http://localhost:5174','https://g-cart-dun.vercel.app'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 };

@@ -13,66 +13,100 @@ const ProductCard = ({ product }) => {
   console.log("ProductCard - All keys:", Object.keys(product || {}));
 
   return product && (
-<div
-  onClick={() => {
-    navigate(`/products/${product.category.toLowerCase()}/${product._id}`);
-    scrollTo(0, 0);
-  }}
-  className="border border-gray-300 rounded-md bg-white p-3 flex flex-col justify-between transition hover:shadow-md cursor-pointer"
->
-
-
-      <div className="group cursor-pointer flex items-center justify-center px-2">
-        <img className="group-hover:scale-105 transition max-w-26 md:max-w-36" src={product.image[0]} alt={product.name} />
+    <div
+      onClick={() => {
+        navigate(`/products/${product.category.toLowerCase()}/${product._id}`);
+        scrollTo(0, 0);
+      }}
+      className="border border-gray-200 rounded-lg bg-white overflow-hidden transition-all duration-200 hover:shadow-lg cursor-pointer group"
+    >
+      {/* Product Image */}
+      <div className="relative bg-gray-50 flex items-center justify-center p-6 md:p-8 h-48 md:h-56">
+        <img 
+          className="group-hover:scale-105 transition-transform duration-200 max-h-full max-w-full object-contain" 
+          src={product.image[0]} 
+          alt={product.name} 
+        />
       </div>
-      <div className="text-gray-500/60 text-sm">
-        <p>{product.category}</p>
-        <p className="text-gray-700 font-medium text-lg truncate w-full">{product.name}</p>
-        <div className="flex items-center gap-0.5">
+
+      {/* Product Details */}
+      <div className="p-4 md:p-5">
+        {/* Category */}
+        <p className="text-gray-400 text-xs md:text-sm uppercase tracking-wide mb-1">
+          {product.category}
+        </p>
+        
+        {/* Product Name */}
+        <h3 className="text-gray-800 font-medium text-base md:text-lg mb-2 line-clamp-2 leading-tight">
+          {product.name}
+        </h3>
+        
+        {/* Rating */}
+        <div className="flex items-center gap-1 mb-3">
           {Array(5).fill('').map((_, i) => (
-            <img key={i} className="md:w-3.5 w-3" src={i < 4 ? assets.star_icon : assets.star_dull_icon} alt="" />
+            <img 
+              key={i} 
+              className="w-3 h-3 md:w-3.5 md:h-3.5" 
+              src={i < 4 ? assets.star_icon : assets.star_dull_icon} 
+              alt="" 
+            />
           ))}
-          <p>(4)</p>
+          <span className="text-gray-400 text-xs md:text-sm ml-1">(4)</span>
         </div>
-       
 
+        {/* Price and Add to Cart */}
+        <div className="flex items-center justify-between">
+          {/* Price Section */}
+          <div className="flex flex-col">
+            <div className="flex items-baseline gap-2">
+              <span className="text-lg md:text-xl font-semibold text-gray-900">
+                {currency}
+                {(() => {
+                  let displayPrice = product.offerPrice ?? product.price ?? 0;
+                  displayPrice = Number(displayPrice);
+                  return isNaN(displayPrice) ? 'N/A' : displayPrice.toFixed(2);
+                })()}
+              </span>
+              
+              {product.offerPrice && product.price && product.offerPrice !== product.price && (
+                <span className="text-gray-400 text-sm md:text-base line-through">
+                  {currency}{Number(product.price).toFixed(2)}
+                </span>
+              )}
+            </div>
+          </div>
 
-<div className="flex items-end justify-between mt-3">
-  <div className="md:text-xl text-base font-medium text-green-600">
-    {currency}
-    {(() => {
-      let displayPrice = product.offerPrice ?? product.price ?? 0;
-      displayPrice = Number(displayPrice);
-      return isNaN(displayPrice) ? 'N/A' : displayPrice.toFixed(2);
-    })()}
-
-    {product.offerPrice && product.price && product.offerPrice !== product.price && (
-      <span className="text-gray-500/60 md:text-sm text-xs line-through ml-2">
-        {currency}{Number(product.price).toFixed(2)}
-      </span>
-    )}
-  </div>
-
-  <div onClick={(e) => { e.stopPropagation(); }} className="text-green-600">
-    {!cartItems[product._id] ? (
-      <button className="flex items-center justify-center gap-1 bg-green-100 border border-green-300 md:w-[80px] w-[64px] h-[34px] rounded text-green-600 font-medium cursor-pointer" onClick={() => addToCart(product._id)} >
-        <img src={assets.cart_icon} alt='cart icon' />
-        Add
-      </button>
-    ) : (
-      <div className="flex items-center justify-center gap-2 md:w-20 w-16 h-[34px] bg-indigo-500/25 rounded select-none">
-        <button onClick={() => { removeFromCart(product._id) }} className="cursor-pointer text-md px-2 h-full" >
-          -
-        </button>
-        <span className="w-5 text-center">{cartItems[product._id]}</span>
-        <button onClick={() => { addToCart(product._id) }} className="cursor-pointer text-md px-2 h-full" >
-          +
-        </button>
-      </div>
-    )}
-  </div>
-</div>
-
+          {/* Add to Cart Section */}
+          <div onClick={(e) => { e.stopPropagation(); }}>
+            {!cartItems[product._id] ? (
+              <button 
+                className="flex items-center justify-center gap-1.5 bg-green-50 hover:bg-green-100 border border-green-200 hover:border-green-300 px-3 py-2 md:px-4 md:py-2.5 rounded-md text-green-600 font-medium text-sm md:text-base transition-colors duration-200" 
+                onClick={() => addToCart(product._id)}
+              >
+                <img src={assets.cart_icon} alt='cart icon' className="w-4 h-4" />
+                Add
+              </button>
+            ) : (
+              <div className="flex items-center bg-green-50 border border-green-200 rounded-md overflow-hidden">
+                <button 
+                  onClick={() => { removeFromCart(product._id) }} 
+                  className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 text-green-600 hover:bg-green-100 transition-colors duration-200 font-medium"
+                >
+                  -
+                </button>
+                <span className="flex items-center justify-center min-w-[32px] md:min-w-[36px] h-8 md:h-9 text-green-600 font-medium text-sm md:text-base">
+                  {cartItems[product._id]}
+                </span>
+                <button 
+                  onClick={() => { addToCart(product._id) }} 
+                  className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 text-green-600 hover:bg-green-100 transition-colors duration-200 font-medium"
+                >
+                  +
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

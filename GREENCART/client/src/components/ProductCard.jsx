@@ -13,7 +13,14 @@ const ProductCard = ({ product }) => {
   console.log("ProductCard - All keys:", Object.keys(product || {}));
 
   return product && (
-   <div onClick={() => { navigate(`/products/${product.category.toLowerCase()}/${product._id}`); scrollTo(0, 0) }} className="border border-gray-500/20 rounded-md md:px-4 px-3 py-2 bg-white w-full h-full">
+<div
+  onClick={() => {
+    navigate(`/products/${product.category.toLowerCase()}/${product._id}`);
+    scrollTo(0, 0);
+  }}
+  className="border border-gray-300 rounded-md bg-white p-3 flex flex-col justify-between transition hover:shadow-md cursor-pointer"
+>
+
 
       <div className="group cursor-pointer flex items-center justify-center px-2">
         <img className="group-hover:scale-105 transition max-w-26 md:max-w-36" src={product.image[0]} alt={product.name} />

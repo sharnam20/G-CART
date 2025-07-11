@@ -13,9 +13,12 @@ const ProductCard = ({ product }) => {
   console.log("ProductCard - All keys:", Object.keys(product || {}));
 
   return product && (
-    <div onClick={()=> {navigate(`/products/${product.category.toLowerCase()}/${product._id}`); scrollTo(0,0)}}className="border border-gray-500/20 rounded-md md:px-4 px-3 py-2 bg-white min-w-56 max-w-56 w-full">
+    <div 
+      onClick={()=> {navigate(`/products/${product.category.toLowerCase()}/${product._id}`); scrollTo(0,0)}}
+      className="border border-gray-500/20 rounded-md md:px-4 px-3 py-2 bg-white w-full"
+    >
       <div className="group cursor-pointer flex items-center justify-center px-2">
-        <img className="group-hover:scale-105 transition max-w-26 md:max-w-36" src={product.image[0]} alt={product.name} />
+        <img className="group-hover:scale-105 transition max-w-26 md:max-w-36 w-full h-auto" src={product.image[0]} alt={product.name} />
       </div>
       <div className="text-gray-500/60 text-sm">
         <p>{product.category}</p>
@@ -27,41 +30,37 @@ const ProductCard = ({ product }) => {
           <p>(4)</p>
         </div>
        
+        <div className="flex flex-col gap-2 mt-3">
+          <div className="md:text-xl text-base font-medium text-green-600">
+            {currency}
+            {(() => {
+              let displayPrice = product.offerPrice ?? product.price ?? 0;
+              displayPrice = Number(displayPrice);
+              return isNaN(displayPrice) ? 'N/A' : displayPrice.toFixed(2);
+            })()}
 
+            {product.offerPrice && product.price && product.offerPrice !== product.price && (
+              <span className="text-gray-500/60 md:text-sm text-xs line-through ml-2">
+                {currency}{Number(product.price).toFixed(2)}
+              </span>
+            )}
+          </div>
 
-<div className="flex flex-col gap-2 mt-3">
-  <div className="md:text-xl text-base font-medium text-green-600">
-    {currency}
-    {(() => {
-      let displayPrice = product.offerPrice ?? product.price ?? 0;
-      displayPrice = Number(displayPrice);
-      return isNaN(displayPrice) ? 'N/A' : displayPrice.toFixed(2);
-    })()}
-
-    {product.offerPrice && product.price && product.offerPrice !== product.price && (
-      <span className="text-gray-500/60 md:text-sm text-xs line-through ml-2">
-        {currency}{Number(product.price).toFixed(2)}
-      </span>
-    )}
-  </div>
-
-  <div onClick={(e) => { e.stopPropagation(); }} className="text-green-600">
-    {!cartItems[product._id] ? (
-      <button className="flex items-center justify-center gap-1 bg-green-100 border border-green-300 w-full h-[34px] rounded text-green-600 font-medium cursor-pointer" onClick={() => addToCart(product._id)} >
-        <img src={assets.cart_icon} alt='cart icon' />
-        Add
-      </button>
-    ) : (
-      <div className="flex items-center justify-between w-full h-[34px] bg-indigo-500/25 rounded select-none px-2">
-        <button onClick={() => { removeFromCart(product._id) }} className="cursor-pointer text-md" >-</button>
-        <span className="w-5 text-center">{cartItems[product._id]}</span>
-        <button onClick={() => { addToCart(product._id) }} className="cursor-pointer text-md" >+</button>
-      </div>
-    )}
-  </div>
-</div>
-
-
+          <div onClick={(e) => { e.stopPropagation(); }} className="text-green-600">
+            {!cartItems[product._id] ? (
+              <button className="flex items-center justify-center gap-1 bg-green-100 border border-green-300 w-full h-[34px] rounded text-green-600 font-medium cursor-pointer" onClick={() => addToCart(product._id)} >
+                <img src={assets.cart_icon} alt='cart icon' />
+                Add
+              </button>
+            ) : (
+              <div className="flex items-center justify-between w-full h-[34px] bg-indigo-500/25 rounded select-none px-2">
+                <button onClick={() => { removeFromCart(product._id) }} className="cursor-pointer text-md" >-</button>
+                <span className="w-5 text-center">{cartItems[product._id]}</span>
+                <button onClick={() => { addToCart(product._id) }} className="cursor-pointer text-md" >+</button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
